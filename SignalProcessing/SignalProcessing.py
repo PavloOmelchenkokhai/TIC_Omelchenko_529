@@ -113,11 +113,11 @@ plt.title("Залежність дисперсії від кроку дискр�
 fig.savefig('./figures/Залежність_дисперсії_від_Dt.png', dpi=600)
 plt.close(fig)
 
-# Графік співвідношення сигнал-шум
+# Графік співвідношення сигнал/шум
 fig, ax = plt.subplots(figsize=(21/2.54, 14/2.54))
 ax.plot(Dt_values, snr_values, linewidth=1)
 ax.set_xlabel("Крок дискретизації Dt", fontsize=14)
-ax.set_ylabel("Співвідношення сигнал-шум", fontsize=14)
-plt.title("Залежність дисперсії від кроку дискретизації", fontsize=14)
-fig.savefig('./figures/Залежність_дисперсії_від_Dt.png', dpi=600)
+ax.set_ylabel("Відношення сигнал/шум (SNR)", fontsize=14)
+plt.title("Залежність відношення сигнал/шум від кроку дискретизації", fontsize=14)
+fig.savefig('./figures/Залежність_SNR_від_Dt.png', dpi=600)
 plt.close(fig)

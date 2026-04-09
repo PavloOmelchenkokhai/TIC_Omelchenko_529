@@ -1,8 +1,6 @@
 import math
 import collections
 
-N_SEQUENCE = 100
-
 # Читання файлу
 with open("sequence.txt", "r", encoding="utf-8") as file:
     original_sequences = [line.strip() for line in file if line.strip()]
@@ -23,32 +21,21 @@ def encode_rle(sequence):
             count = 1
 
     result.append(f"{sequence[-1]}:{count}")
-
     return ' '.join(result)
 
 
 def decode_rle(encoded):
-    if not encoded:
-        return ""
-
     result = []
-
     for pair in encoded.split():
         if ':' not in pair:
             continue
-
         char, count = pair.split(':')
         result.append(char * int(count))
-
     return ''.join(result)
 
 
 # LZW
 def encode_lzw(sequence):
-    if not sequence:
-        return [], {}
-
-    # Початковий словник
     unique_chars = sorted(set(sequence))
     dictionary = {ch: i for i, ch in enumerate(unique_chars)}
     reverse_dict = {i: ch for ch, i in dictionary.items()}
@@ -76,9 +63,6 @@ def encode_lzw(sequence):
 
 
 def decode_lzw(codes, initial_dict):
-    if not codes:
-        return ""
-
     dictionary = initial_dict.copy()
     dict_size = max(dictionary.keys()) + 1
 
@@ -99,11 +83,15 @@ def decode_lzw(codes, initial_dict):
     return result
 
 
-# Основна обробка
+# Основна частина
 with open("results_rle_lzw.txt", "w", encoding="utf-8") as file:
 
+    file.write("===== COMPARISON TABLE =====\n")
+    file.write(f"{'Seq':<5}{'Entropy':<10}{'RLE CR':<10}{'LZW CR':<10}\n")
+
     for i, sequence in enumerate(original_sequences, 1):
-        file.write(f"\n===== Sequence {i} =====\n")
+
+        file.write(f"\n\n===== Sequence {i} =====\n")
 
         # Частоти
         counts = collections.Counter(sequence)
@@ -115,8 +103,6 @@ with open("results_rle_lzw.txt", "w", encoding="utf-8") as file:
         entropy = -sum(p * math.log2(p) for p in probabilities.values())
 
         file.write(f"Sequence: {sequence}\n")
-        file.write(f"Counts: {counts}\n")
-        file.write(f"Probabilities: {probabilities}\n")
         file.write(f"Entropy: {round(entropy, 4)}\n")
 
         # RLE
@@ -127,27 +113,26 @@ with open("results_rle_lzw.txt", "w", encoding="utf-8") as file:
         size_rle = len(encoded_rle.encode('utf-8')) * 8
 
         cr_rle = round(size_original / size_rle, 2) if size_rle != 0 else 0
-        if cr_rle < 1:
-            cr_rle = "-"
 
         file.write("\n--- RLE ---\n")
         file.write(f"Encoded: {encoded_rle}\n")
-        file.write(f"Decoded: {decoded_rle}\n")
         file.write(f"Correct: {sequence == decoded_rle}\n")
-        file.write(f"Size original: {size_original} bits\n")
-        file.write(f"Size encoded: {size_rle} bits\n")
-        file.write(f"Compression ratio: {cr_rle}\n")
+        file.write(f"CR: {cr_rle}\n")
 
         # LZW
-        encoded_lzw, initial_dict = encode_lzw(sequence)
-        decoded_lzw = decode_lzw(encoded_lzw, initial_dict)
+        encoded_lzw, lzw_dict = encode_lzw(sequence)
+        decoded_lzw = decode_lzw(encoded_lzw, lzw_dict)
 
         size_lzw = len(encoded_lzw) * 16
         cr_lzw = round(size_original / size_lzw, 2) if size_lzw != 0 else 0
 
         file.write("\n--- LZW ---\n")
         file.write(f"Encoded: {encoded_lzw}\n")
-        file.write(f"Decoded: {decoded_lzw}\n")
         file.write(f"Correct: {sequence == decoded_lzw}\n")
-        file.write(f"Size encoded: {size_lzw} bits\n")
-        file.write(f"Compression ratio: {cr_lzw}\n")
+        file.write(f"CR: {cr_lzw}\n")
+
+        file.write("\nLZW Dictionary:\n")
+        for k, v in lzw_dict.items():
+            file.write(f"{k}: {v}\n")
+
+        file.write(f"\n[Table Row] {i:<5}{round(entropy,4):<10}{cr_rle:<10}{cr_lzw:<10}\n")

@@ -48,7 +48,15 @@ sequences.append(seq4)
 
 # Послідовність 5
 elements = list(surname[:2]) + list(group_number)
-seq5 = [random.choice(elements) for _ in range(N)]
+
+k = len(elements)
+count_each = N // k
+
+seq5 = []
+for el in elements:
+    seq5 += [el] * count_each
+
+random.shuffle(seq5)
 seq5 = ''.join(seq5)
 sequences.append(seq5)
 

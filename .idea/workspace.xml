@@ -6,8 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="57d716fb-2c3e-47a5-89aa-f604b3cb385c" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LosslessCompression/results_rle_lzw.txt" beforeDir="false" afterPath="$PROJECT_DIR$/LosslessCompression/results_rle_lzw.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LosslessCompression/rlelzwcompression.py" beforeDir="false" afterPath="$PROJECT_DIR$/LosslessCompression/rlelzwcompression.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

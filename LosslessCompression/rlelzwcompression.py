@@ -75,7 +75,7 @@ def encode_lzw(sequence):
     if current:
         result.append(dictionary[current])
 
-    return result
+    return result, dictionary
 
 
 # ОСНОВНА ЧАСТИНА
@@ -108,7 +108,7 @@ with open("results_rle_lzw.txt", "w", encoding="utf-8") as file:
         file.write(f"Коефіцієнт стиснення: {cr_rle}\n")
 
         # LZW
-        encoded_lzw = encode_lzw(sequence)
+        encoded_lzw, lzw_dict = encode_lzw(sequence)
         encoded_lzw_str = ''.join(map(str, encoded_lzw))
 
         size_lzw = len(encoded_lzw) * 16
@@ -118,6 +118,10 @@ with open("results_rle_lzw.txt", "w", encoding="utf-8") as file:
         file.write(f"Закодована: {encoded_lzw_str}\n")
         file.write(f"Розмір закодованої: {size_lzw} bits\n")
         file.write(f"Коефіцієнт стиснення: {cr_lzw}\n")
+
+        file.write("\nСловник LZW:\n")
+        for key, value in lzw_dict.items():
+            file.write(f"{key} : {value}\n")
 
         results_table.append([
             f"Посл. {i}",

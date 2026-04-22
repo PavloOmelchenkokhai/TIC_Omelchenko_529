@@ -1,46 +1,64 @@
 import math
 import collections
+import matplotlib.pyplot as plt
 
-# Читання файлу
+# ЧИТАННЯ ФАЙЛУ
 with open("sequence.txt", "r", encoding="utf-8") as file:
     original_sequences = [line.strip() for line in file if line.strip()]
+
+results_table = []
 
 # RLE
 def encode_rle(sequence):
     if not sequence:
         return ""
 
-    result = []
+    result = ""
     count = 1
+
+    def encode_char(ch):
+        return f"#{ch}" if ch.isdigit() else ch
 
     for i in range(1, len(sequence)):
         if sequence[i] == sequence[i - 1]:
             count += 1
         else:
-            result.append(f"{sequence[i - 1]}:{count}")
+            result += encode_char(sequence[i - 1]) + str(count)
             count = 1
 
-    result.append(f"{sequence[-1]}:{count}")
-    return ' '.join(result)
+    result += encode_char(sequence[-1]) + str(count)
+
+    return result
 
 
 def decode_rle(encoded):
-    result = []
-    for pair in encoded.split():
-        if ':' not in pair:
-            continue
-        char, count = pair.split(':')
-        result.append(char * int(count))
-    return ''.join(result)
+    result = ""
+    i = 0
+
+    while i < len(encoded):
+
+        if encoded[i] == '#':
+            char = encoded[i + 1]
+            i += 2
+        else:
+            char = encoded[i]
+            i += 1
+
+        count = ""
+        while i < len(encoded) and encoded[i].isdigit():
+            count += encoded[i]
+            i += 1
+
+        result += char * int(count)
+
+    return result
 
 
 # LZW
 def encode_lzw(sequence):
-    unique_chars = sorted(set(sequence))
-    dictionary = {ch: i for i, ch in enumerate(unique_chars)}
-    reverse_dict = {i: ch for ch, i in dictionary.items()}
-
+    dictionary = {ch: i for i, ch in enumerate(sorted(set(sequence)))}
     next_code = len(dictionary)
+
     current = ""
     result = []
 
@@ -49,90 +67,75 @@ def encode_lzw(sequence):
         if combined in dictionary:
             current = combined
         else:
-            if current:
-                result.append(dictionary[current])
+            result.append(dictionary[current])
             dictionary[combined] = next_code
-            reverse_dict[next_code] = combined
             next_code += 1
             current = symbol
 
     if current:
         result.append(dictionary[current])
 
-    return result, reverse_dict
-
-
-def decode_lzw(codes, initial_dict):
-    dictionary = initial_dict.copy()
-    dict_size = max(dictionary.keys()) + 1
-
-    previous = dictionary[codes[0]]
-    result = previous
-
-    for code in codes[1:]:
-        if code in dictionary:
-            entry = dictionary[code]
-        else:
-            entry = previous + previous[0]
-
-        result += entry
-        dictionary[dict_size] = previous + entry[0]
-        dict_size += 1
-        previous = entry
-
     return result
 
 
-# Основна частина
+# ОСНОВНА ЧАСТИНА
 with open("results_rle_lzw.txt", "w", encoding="utf-8") as file:
-
-    file.write("===== COMPARISON TABLE =====\n")
-    file.write(f"{'Seq':<5}{'Entropy':<10}{'RLE CR':<10}{'LZW CR':<10}\n")
 
     for i, sequence in enumerate(original_sequences, 1):
 
-        file.write(f"\n\n===== Sequence {i} =====\n")
+        file.write(f"\n===== Послідовність {i} =====\n")
 
-        # Частоти
         counts = collections.Counter(sequence)
-
-        # Ймовірності
         probabilities = {k: v / len(sequence) for k, v in counts.items()}
-
-        # Ентропія
         entropy = -sum(p * math.log2(p) for p in probabilities.values())
 
-        file.write(f"Sequence: {sequence}\n")
-        file.write(f"Entropy: {round(entropy, 4)}\n")
+        file.write(f"Оригінал: {sequence}\n")
+        file.write(f"Розмір оригіналу: {len(sequence)*8} bits\n")
+        file.write(f"Ентропія: {round(entropy, 4)}\n")
 
         # RLE
         encoded_rle = encode_rle(sequence)
         decoded_rle = decode_rle(encoded_rle)
 
-        size_original = len(sequence) * 8
-        size_rle = len(encoded_rle.encode('utf-8')) * 8
-
-        cr_rle = round(size_original / size_rle, 2) if size_rle != 0 else 0
+        size_rle = len(encoded_rle) * 8
+        cr_rle = round((len(sequence)*8) / size_rle, 2)
 
         file.write("\n--- RLE ---\n")
-        file.write(f"Encoded: {encoded_rle}\n")
-        file.write(f"Correct: {sequence == decoded_rle}\n")
-        file.write(f"CR: {cr_rle}\n")
+        file.write(f"Закодована: {encoded_rle}\n")
+        file.write(f"Декодована: {decoded_rle}\n")
+        file.write(f"Розмір закодованої: {size_rle} bits\n")
+        file.write(f"Розмір декодованої: {len(decoded_rle)*8} bits\n")
+        file.write(f"Коефіцієнт стиснення: {cr_rle}\n")
 
         # LZW
-        encoded_lzw, lzw_dict = encode_lzw(sequence)
-        decoded_lzw = decode_lzw(encoded_lzw, lzw_dict)
+        encoded_lzw = encode_lzw(sequence)
+        encoded_lzw_str = ''.join(map(str, encoded_lzw))
 
         size_lzw = len(encoded_lzw) * 16
-        cr_lzw = round(size_original / size_lzw, 2) if size_lzw != 0 else 0
+        cr_lzw = round((len(sequence)*8) / size_lzw, 2)
 
         file.write("\n--- LZW ---\n")
-        file.write(f"Encoded: {encoded_lzw}\n")
-        file.write(f"Correct: {sequence == decoded_lzw}\n")
-        file.write(f"CR: {cr_lzw}\n")
+        file.write(f"Закодована: {encoded_lzw_str}\n")
+        file.write(f"Розмір закодованої: {size_lzw} bits\n")
+        file.write(f"Коефіцієнт стиснення: {cr_lzw}\n")
 
-        file.write("\nLZW Dictionary:\n")
-        for k, v in lzw_dict.items():
-            file.write(f"{k}: {v}\n")
+        results_table.append([
+            f"Посл. {i}",
+            round(entropy, 2),
+            cr_rle if cr_rle >= 1 else "-",
+            cr_lzw
+        ])
 
-        file.write(f"\n[Table Row] {i:<5}{round(entropy,4):<10}{cr_rle:<10}{cr_lzw:<10}\n")
+# ТАБЛИЦЯ
+fig, ax = plt.subplots()
+ax.axis('off')
+
+table = ax.table(
+    cellText=results_table,
+    colLabels=["Послідовність", "Ентропія", "КС RLE", "КС LZW"],
+    loc='center'
+)
+
+table.scale(1, 2)
+plt.savefig("comparison_table.png")
+plt.show()

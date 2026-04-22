@@ -5,6 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="57d716fb-2c3e-47a5-89aa-f604b3cb385c" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/LosslessCompression/achccompression.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

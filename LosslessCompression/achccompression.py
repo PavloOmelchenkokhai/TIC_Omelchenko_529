@@ -109,7 +109,8 @@ def build_codes(node, prefix="", codebook=None):
         return codebook
 
     if node.char is not None:
-        codebook[node.char] = prefix
+        codebook[node.char] = prefix if prefix != "" else "0"
+        return codebook
 
     build_codes(node.left, prefix + "0", codebook)
     build_codes(node.right, prefix + "1", codebook)
@@ -122,6 +123,9 @@ def encode_huffman(sequence, codebook):
 
 
 def decode_huffman(encoded, tree):
+    if tree.left is None and tree.right is None:
+        return tree.char * len(encoded)
+
     result = ""
     node = tree
 

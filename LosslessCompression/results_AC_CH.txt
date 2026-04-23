@@ -138,7 +138,7 @@ Decoded: 1111111111
 BPS: 3.2
 
 --- Huffman Coding ---
-Codebook: {'1': ''}
-Encoded: 
-Decoded: 
-BPS: 0.0
+Codebook: {'1': '0'}
+Encoded: 0000000000
+Decoded: 1111111111
+BPS: 1.0

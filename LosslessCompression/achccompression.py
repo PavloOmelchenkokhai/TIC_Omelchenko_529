@@ -1,7 +1,7 @@
 import math
 import collections
-import ast
 import heapq
+import matplotlib.pyplot as plt
 
 # ЗЧИТУВАННЯ
 def read_sequences():
@@ -9,7 +9,6 @@ def read_sequences():
         sequences = [line.strip() for line in file if line.strip()]
 
     sequences = [seq[:10] for seq in sequences]
-
     return sequences
 
 
@@ -21,7 +20,7 @@ def calculate_entropy(sequence):
     return counts, probabilities, entropy
 
 
-# АРИФМЕТИЧНЕ КОДУВАННЯ
+# AC
 def build_intervals(probabilities):
     intervals = {}
     low = 0.0
@@ -60,6 +59,19 @@ def decode_ac(code, intervals, length):
     return result
 
 
+# Десяткове -> двійкове
+def float_to_binary(value, bits=32):
+    binary = ""
+    for _ in range(bits):
+        value *= 2
+        if value >= 1:
+            binary += "1"
+            value -= 1
+        else:
+            binary += "0"
+    return binary
+
+
 # HUFFMAN
 class Node:
     def __init__(self, char, freq):
@@ -89,9 +101,12 @@ def build_huffman_tree(probabilities):
     return heap[0]
 
 
-def build_codes(node, prefix="", codebook={}):
+def build_codes(node, prefix="", codebook=None):
+    if codebook is None:
+        codebook = {}
+
     if node is None:
-        return
+        return codebook
 
     if node.char is not None:
         codebook[node.char] = prefix
@@ -122,7 +137,6 @@ def decode_huffman(encoded, tree):
 
 def main():
     sequences = read_sequences()
-
     results = []
 
     with open("results_AC_CH.txt", "w", encoding="utf-8") as file:
@@ -141,17 +155,18 @@ def main():
             encoded_ac, intervals = encode_ac(sequence, probabilities)
             decoded_ac = decode_ac(encoded_ac, intervals, len(sequence))
 
-            bps_ac = math.ceil(-math.log2(encoded_ac)) / len(sequence)
+            binary_ac = float_to_binary(encoded_ac, 32)
+            bps_ac = len(binary_ac) / len(sequence)
 
             file.write("\n--- Arithmetic Coding ---\n")
-            file.write(f"Encoded: {encoded_ac}\n")
+            file.write(f"Encoded (decimal): {encoded_ac}\n")
+            file.write(f"Encoded (binary): {binary_ac}\n")
             file.write(f"Decoded: {decoded_ac}\n")
-            file.write(f"Correct: {decoded_ac == sequence}\n")
             file.write(f"BPS: {round(bps_ac, 4)}\n")
 
             # HUFFMAN
             tree = build_huffman_tree(probabilities)
-            codebook = build_codes(tree, "", {})
+            codebook = build_codes(tree)
 
             encoded_hc = encode_huffman(sequence, codebook)
             decoded_hc = decode_huffman(encoded_hc, tree)
@@ -162,12 +177,30 @@ def main():
             file.write(f"Codebook: {codebook}\n")
             file.write(f"Encoded: {encoded_hc}\n")
             file.write(f"Decoded: {decoded_hc}\n")
-            file.write(f"Correct: {decoded_hc == sequence}\n")
             file.write(f"BPS: {round(bps_hc, 4)}\n")
 
-            results.append([round(entropy, 2), bps_ac, bps_hc])
+            results.append([bps_ac, bps_hc])
 
-    print("Результати у results_AC_CH.txt")
+    # РИСУНОК ТАБЛИЦІ
+    fig, ax = plt.subplots()
+    ax.axis('off')
+
+    table_data = [
+        [i + 1, round(results[i][0], 3), round(results[i][1], 3)]
+        for i in range(len(results))
+    ]
+
+    table = ax.table(
+        cellText=table_data,
+        colLabels=["Seq", "BPS AC", "BPS Huffman"],
+        loc='center'
+    )
+
+    table.scale(1, 2)
+    plt.savefig("bps_comparison.png")
+    plt.show()
+
+    print("Готово results_AC_CH.txt + bps_comparison.png")
 
 
 if __name__ == "__main__":

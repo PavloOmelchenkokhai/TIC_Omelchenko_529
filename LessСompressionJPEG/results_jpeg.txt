@@ -1,0 +1,6 @@
+8_1.bmp Q=1 | CR=17.53 | size=1435213 bits
+8_1.bmp Q=2 | CR=24.94 | size=1009243 bits
+8_2.bmp Q=1 | CR=42.54 | size=591649 bits
+8_2.bmp Q=2 | CR=60.91 | size=413184 bits
+8_3.bmp Q=1 | CR=56.09 | size=448713 bits
+8_3.bmp Q=2 | CR=78.07 | size=322368 bits
